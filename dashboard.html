@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Dashboard - AI Voice Interview Trainer</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="glass-header">
+            <div class="logo">
+                <span class="logo-icon">📊</span>
+                <h1>Dashboard</h1>
+            </div>
+            <nav class="header-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="interview.html" class="nav-link">New Interview</a>
+            </nav>
+        </header>
+
+        <main class="dashboard-main">
+            <div class="stats-grid">
+                <div class="stat-card glass-card">
+                    <span class="stat-icon">📝</span>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Interviews</span>
+                        <span id="totalInterviews" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="stat-card glass-card">
+                    <span class="stat-icon">⭐</span>
+                    <div class="stat-info">
+                        <span class="stat-label">Average Score</span>
+                        <span id="avgScore" class="stat-value">0%</span>
+                    </div>
+                </div>
+                <div class="stat-card glass-card">
+                    <span class="stat-icon">🏆</span>
+                    <div class="stat-info">
+                        <span class="stat-label">Best Score</span>
+                        <span id="bestScore" class="stat-value">0%</span>
+                    </div>
+                </div>
+                <div class="stat-card glass-card">
+                    <span class="stat-icon">📈</span>
+                    <div class="stat-info">
+                        <span class="stat-label">Improvement</span>
+                        <span id="improvement" class="stat-value">+0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container glass-card">
+                    <h3>Progress Over Time</h3>
+                    <canvas id="progressChart"></canvas>
+                </div>
+                <div class="chart-container glass-card">
+                    <h3>Skill Breakdown</h3>
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+
+            <div class="history-section glass-card">
+                <div class="section-header">
+                    <h3>Interview History</h3>
+                    <button id="clearHistoryBtn" class="btn-text">Clear All</button>
+                </div>
+                <div id="historyList" class="history-list">
+                    <!-- History items will be injected here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="js/storage.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
+<div id="bg-canvas"></div>
+</html>
