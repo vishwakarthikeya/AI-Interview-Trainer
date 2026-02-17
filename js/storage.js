@@ -1,43 +1,76 @@
 /**
- * Storage Service
- * Handles all localStorage operations for interview history
+ * Enhanced Storage Service
+ * Handles localStorage operations with interview history and evaluations
  */
 
 export class StorageService {
     constructor() {
-        this.storageKey = 'interview_trainer_history';
-        this.maxHistoryItems = 50; // Limit storage size
+        this.storageKey = 'interview_trainer_history_v2';
+        this.maxHistoryItems = 50;
     }
 
     initialize() {
-        // Create storage if it doesn't exist
         if (!localStorage.getItem(this.storageKey)) {
             localStorage.setItem(this.storageKey, JSON.stringify([]));
         }
+        this.migrateOldData();
     }
 
-    // Save interview to history
+    migrateOldData() {
+        try {
+            const oldData = localStorage.getItem('interview_trainer_history');
+            if (oldData) {
+                const oldHistory = JSON.parse(oldData);
+                if (oldHistory.length > 0) {
+                    const newHistory = oldHistory.map(item => ({
+                        id: item.id || this.generateId(),
+                        timestamp: item.savedAt || item.date || Date.now(),
+                        mode: item.mode || 'custom',
+                        modeDisplayName: item.modeDisplayName || 'Interview',
+                        jobTitle: item.jobTitle || item.role || 'Unknown',
+                        difficulty: item.difficulty || 'medium',
+                        duration: item.duration || 5,
+                        conversationHistory: item.conversationHistory || [],
+                        evaluations: item.evaluations || [],
+                        analysis: item.analysis || {
+                            overallScore: item.score || 0,
+                            strengths: item.strengths || [],
+                            areasForImprovement: item.weaknesses || []
+                        },
+                        overallScore: item.overallScore || item.score || 0,
+                        technicalAverage: item.technicalAverage || 0,
+                        communicationAverage: item.communicationAverage || 0,
+                        confidenceAverage: item.confidenceAverage || 0
+                    }));
+                    
+                    const current = this.getHistory();
+                    const merged = [...newHistory, ...current].slice(0, this.maxHistoryItems);
+                    localStorage.setItem(this.storageKey, JSON.stringify(merged));
+                }
+            }
+        } catch (error) {
+            console.error('Migration failed:', error);
+        }
+    }
+
     saveInterview(interviewData) {
         try {
             let history = this.getHistory();
             
-            // Add new interview
             const newInterview = {
                 ...interviewData,
                 id: interviewData.id || this.generateId(),
                 savedAt: new Date().toISOString()
             };
             
-            history.unshift(newInterview); // Add to beginning
+            history = history.filter(item => item.id !== newInterview.id);
+            history.unshift(newInterview);
             
-            // Limit history size
             if (history.length > this.maxHistoryItems) {
                 history = history.slice(0, this.maxHistoryItems);
             }
             
             localStorage.setItem(this.storageKey, JSON.stringify(history));
-            
-            // Dispatch event for other components
             this.dispatchStorageEvent();
             
             return newInterview;
@@ -47,7 +80,6 @@ export class StorageService {
         }
     }
 
-    // Get all interview history
     getHistory() {
         try {
             const data = localStorage.getItem(this.storageKey);
@@ -58,13 +90,11 @@ export class StorageService {
         }
     }
 
-    // Get single interview by ID
     getInterview(id) {
         const history = this.getHistory();
         return history.find(item => item.id === id) || null;
     }
 
-    // Delete interview from history
     deleteInterview(id) {
         try {
             const history = this.getHistory();
@@ -78,7 +108,6 @@ export class StorageService {
         }
     }
 
-    // Clear all history
     clearHistory() {
         try {
             localStorage.setItem(this.storageKey, JSON.stringify([]));
@@ -90,7 +119,6 @@ export class StorageService {
         }
     }
 
-    // Get statistics
     getStats() {
         const history = this.getHistory();
         
@@ -103,12 +131,11 @@ export class StorageService {
             };
         }
 
-        const scores = history.map(i => i.score || 0);
+        const scores = history.map(i => i.overallScore || 0);
         const totalInterviews = history.length;
         const averageScore = Math.round(scores.reduce((a, b) => a + b, 0) / totalInterviews);
         const bestScore = Math.max(...scores);
         
-        // Calculate recent trend (last 5 vs previous 5)
         const recentScores = scores.slice(0, 5);
         const previousScores = scores.slice(5, 10);
         
@@ -116,7 +143,7 @@ export class StorageService {
         if (previousScores.length > 0) {
             const recentAvg = recentScores.reduce((a, b) => a + b, 0) / recentScores.length;
             const previousAvg = previousScores.reduce((a, b) => a + b, 0) / previousScores.length;
-            recentTrend = Math.round(((recentAvg - previousAvg) / previousAvg) * 100);
+            recentTrend = previousAvg > 0 ? Math.round(((recentAvg - previousAvg) / previousAvg) * 100) : 0;
         }
 
         return {
@@ -127,23 +154,19 @@ export class StorageService {
         };
     }
 
-    // Get data for progress chart
     getProgressData() {
         const history = this.getHistory();
-        
-        // Take last 10 interviews for chart
         const recent = history.slice(0, 10).reverse();
         
         return {
-            labels: recent.map((item, index) => {
-                const date = new Date(item.date || item.savedAt);
-                return `#${index + 1} ${date.toLocaleDateString()}`;
+            labels: recent.map((item) => {
+                const date = new Date(item.timestamp || item.savedAt);
+                return `${date.toLocaleDateString()}`;
             }),
-            scores: recent.map(item => item.score || 0)
+            scores: recent.map(item => item.overallScore || 0)
         };
     }
 
-    // Get skill distribution for radar chart
     getSkillData() {
         const history = this.getHistory();
         
@@ -157,31 +180,29 @@ export class StorageService {
             };
         }
 
-        // Average skills from last 5 interviews
         const recent = history.slice(0, 5);
         const skills = recent.reduce((acc, curr) => {
-            if (curr.skills) {
-                Object.keys(curr.skills).forEach(key => {
-                    acc[key] = (acc[key] || 0) + curr.skills[key];
-                });
-            }
+            acc.technical += curr.technicalAverage || curr.overallScore || 0;
+            acc.communication += curr.communicationAverage || curr.overallScore || 0;
+            acc.problemSolving += curr.confidenceAverage || curr.overallScore || 0;
+            acc.experience += curr.overallScore || 0;
+            acc.culture += curr.overallScore || 0;
             return acc;
-        }, {});
+        }, { technical: 0, communication: 0, problemSolving: 0, experience: 0, culture: 0 });
 
-        // Calculate averages
+        const count = recent.length || 1;
         Object.keys(skills).forEach(key => {
-            skills[key] = Math.round(skills[key] / recent.length);
+            skills[key] = Math.round(skills[key] / count);
         });
 
         return skills;
     }
 
-    // Export data as JSON
     exportData() {
         const data = {
             history: this.getHistory(),
             exportDate: new Date().toISOString(),
-            version: '1.0'
+            version: '2.0'
         };
         
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -195,7 +216,6 @@ export class StorageService {
         URL.revokeObjectURL(url);
     }
 
-    // Import data from JSON
     importData(jsonData) {
         try {
             const data = JSON.parse(jsonData);

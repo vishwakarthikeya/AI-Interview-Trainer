@@ -1,31 +1,33 @@
 /**
- * Dashboard Controller
- * Manages dashboard page functionality and chart rendering
+ * Enhanced Dashboard Controller
+ * Manages dashboard with detailed interview analysis
  */
 
 import { StorageService } from './storage.js';
+import { UIService } from './ui.js';
 
 class DashboardController {
     constructor() {
         this.storage = new StorageService();
+        this.ui = new UIService();
         this.charts = {};
+        this.currentFilter = 'all';
         
         this.init();
     }
 
     init() {
-        // Initialize storage
         this.storage.initialize();
         
-        // Load and display data
+        // Get highlight ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        this.highlightId = urlParams.get('highlight');
+        
         this.loadStats();
         this.loadHistory();
         this.initCharts();
-        
-        // Set up event listeners
         this.setupEventListeners();
         
-        // Listen for storage updates
         window.addEventListener('storage-update', () => {
             this.refreshDashboard();
         });
@@ -37,11 +39,36 @@ class DashboardController {
             clearBtn.addEventListener('click', () => this.confirmClearHistory());
         }
         
-        // Export button (optional)
         const exportBtn = document.getElementById('exportDataBtn');
         if (exportBtn) {
             exportBtn.addEventListener('click', () => this.storage.exportData());
         }
+        
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.currentFilter = e.target.dataset.filter;
+                this.loadHistory();
+            });
+        });
+        
+        // Modal close
+        const modal = document.getElementById('interviewModal');
+        const closeBtn = modal?.querySelector('.close-modal');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+        }
+        
+        // Click outside to close
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
     }
 
     loadStats() {
@@ -58,10 +85,15 @@ class DashboardController {
     }
 
     loadHistory() {
-        const history = this.storage.getHistory();
+        let history = this.storage.getHistory();
         const historyList = document.getElementById('historyList');
         
         if (!historyList) return;
+        
+        // Apply filter
+        if (this.currentFilter !== 'all') {
+            history = history.filter(item => item.mode === this.currentFilter);
+        }
         
         if (history.length === 0) {
             historyList.innerHTML = `
@@ -73,10 +105,19 @@ class DashboardController {
             return;
         }
 
-        historyList.innerHTML = history.map(item => this.renderHistoryItem(item)).join('');
+        historyList.innerHTML = history.map(item => this.renderHistoryCard(item)).join('');
+        
+        // Add click listeners
+        document.querySelectorAll('.history-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('delete-btn') && !e.target.closest('.delete-btn')) {
+                    this.showInterviewDetails(card.dataset.id);
+                }
+            });
+        });
         
         // Add delete listeners
-        document.querySelectorAll('.delete-history-item').forEach(btn => {
+        document.querySelectorAll('.delete-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const id = btn.dataset.id;
@@ -84,32 +125,69 @@ class DashboardController {
             });
         });
         
-        // Add click listeners for details
-        document.querySelectorAll('.history-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                if (!e.target.classList.contains('delete-history-item')) {
-                    this.showInterviewDetails(item.dataset.id);
+        // Highlight if needed
+        if (this.highlightId) {
+            setTimeout(() => {
+                const card = document.querySelector(`.history-card[data-id="${this.highlightId}"]`);
+                if (card) {
+                    card.classList.add('highlight-card');
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Remove highlight after animation
+                    setTimeout(() => {
+                        card.classList.remove('highlight-card');
+                    }, 2000);
+                    
+                    // Auto-show details
+                    this.showInterviewDetails(this.highlightId);
+                    
+                    // Clear from URL
+                    window.history.replaceState({}, '', window.location.pathname);
+                    this.highlightId = null;
                 }
-            });
-        });
+            }, 500);
+        }
     }
 
-    renderHistoryItem(item) {
-        const date = new Date(item.date || item.savedAt);
+    renderHistoryCard(item) {
+        const date = new Date(item.timestamp || item.date || item.savedAt);
         const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-        const role = this.formatRole(item.role);
-        const score = item.score || 0;
+        const role = item.jobTitle || this.formatRole(item.role);
+        const score = item.overallScore || item.score || 0;
+        const mode = item.mode || 'custom';
+        const modeDisplay = item.modeDisplayName || this.getModeDisplayName(mode);
+        
+        // Determine card class based on mode
+        let cardClass = 'history-card';
+        if (mode === 'custom') cardClass += ' custom';
+        else if (mode === 'practice') cardClass += ' practice';
+        else if (mode === 'resume') cardClass += ' resume';
         
         return `
-            <div class="history-item" data-id="${item.id}">
-                <div class="history-info">
+            <div class="${cardClass}" data-id="${item.id}">
+                <div class="history-card-header">
                     <span class="history-date">${formattedDate}</span>
-                    <span class="history-role">${role} (${item.difficulty})</span>
+                    <span class="mode-badge">${modeDisplay}</span>
                 </div>
-                <div class="history-score">${score}%</div>
-                <button class="btn-text delete-history-item" data-id="${item.id}">Delete</button>
+                <div class="history-card-body">
+                    <div class="history-info">
+                        <h4>${role}</h4>
+                        <p>${item.difficulty || 'medium'} · ${item.duration || 5} min</p>
+                    </div>
+                    <div class="history-score">${score}%</div>
+                </div>
+                <button class="delete-btn" data-id="${item.id}">Delete</button>
             </div>
         `;
+    }
+
+    getModeDisplayName(mode) {
+        const modes = {
+            'custom': 'Custom',
+            'practice': 'Practice',
+            'resume': 'Resume'
+        };
+        return modes[mode] || mode;
     }
 
     formatRole(role) {
@@ -120,7 +198,7 @@ class DashboardController {
             'ux-designer': 'UX Designer',
             'devops-engineer': 'DevOps Engineer'
         };
-        return roles[role] || role;
+        return roles[role] || role || 'Unknown Role';
     }
 
     initCharts() {
@@ -144,7 +222,11 @@ class DashboardController {
                     borderColor: '#6366f1',
                     backgroundColor: 'rgba(99, 102, 241, 0.1)',
                     tension: 0.4,
-                    fill: true
+                    fill: true,
+                    pointBackgroundColor: '#6366f1',
+                    pointBorderColor: '#fff',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }]
             },
             options: {
@@ -153,6 +235,11 @@ class DashboardController {
                 plugins: {
                     legend: {
                         display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => `Score: ${context.raw}%`
+                        }
                     }
                 },
                 scales: {
@@ -163,7 +250,8 @@ class DashboardController {
                             color: 'rgba(255, 255, 255, 0.1)'
                         },
                         ticks: {
-                            color: '#9aa3af'
+                            color: '#9aa3af',
+                            callback: (value) => value + '%'
                         }
                     },
                     x: {
@@ -171,7 +259,9 @@ class DashboardController {
                             display: false
                         },
                         ticks: {
-                            color: '#9aa3af'
+                            color: '#9aa3af',
+                            maxRotation: 45,
+                            minRotation: 45
                         }
                     }
                 }
@@ -201,7 +291,9 @@ class DashboardController {
                     backgroundColor: 'rgba(99, 102, 241, 0.2)',
                     borderColor: '#6366f1',
                     pointBackgroundColor: '#6366f1',
-                    pointBorderColor: '#fff'
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#6366f1'
                 }]
             },
             options: {
@@ -224,7 +316,8 @@ class DashboardController {
                         },
                         ticks: {
                             color: '#9aa3af',
-                            backdropColor: 'transparent'
+                            backdropColor: 'transparent',
+                            callback: (value) => value + '%'
                         }
                     }
                 }
@@ -233,10 +326,7 @@ class DashboardController {
     }
 
     refreshDashboard() {
-        // Update stats
         this.loadStats();
-        
-        // Update history
         this.loadHistory();
         
         // Update charts
@@ -278,9 +368,139 @@ class DashboardController {
         const interview = this.storage.getInterview(id);
         if (!interview) return;
         
-        // Could show a modal with details
-        console.log('Interview details:', interview);
-        alert(`Interview Details:\nRole: ${this.formatRole(interview.role)}\nScore: ${interview.score}%\nDate: ${new Date(interview.date).toLocaleString()}`);
+        const modal = document.getElementById('interviewModal');
+        const content = document.getElementById('modalContent');
+        const title = document.getElementById('modalTitle');
+        
+        if (!modal || !content) return;
+        
+        title.textContent = `Interview Details - ${interview.jobTitle || 'Interview'}`;
+        
+        // Format date
+        const date = new Date(interview.timestamp || interview.date || interview.savedAt);
+        const formattedDate = date.toLocaleString();
+        
+        // Get analysis data
+        const analysis = interview.analysis || {};
+        const qaHistory = interview.conversationHistory || [];
+        
+        // Build HTML
+        let html = `
+            <div class="detail-score">
+                <div class="score-value">${interview.overallScore || interview.score || 0}%</div>
+                <div class="score-breakdown">
+                    ${analysis.confidenceScore ? `<div class="score-item"><span class="label">Confidence</span><span class="value">${analysis.confidenceScore}%</span></div>` : ''}
+                    ${analysis.communicationScore ? `<div class="score-item"><span class="label">Communication</span><span class="value">${analysis.communicationScore}%</span></div>` : ''}
+                    ${analysis.technicalScore ? `<div class="score-item"><span class="label">Technical</span><span class="value">${analysis.technicalScore}%</span></div>` : ''}
+                </div>
+            </div>
+            
+            <div class="interview-meta" style="text-align: center; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                <span>${formattedDate}</span> · 
+                <span>${interview.modeDisplayName || this.getModeDisplayName(interview.mode)}</span> · 
+                <span>${interview.difficulty || 'medium'}</span> · 
+                <span>${interview.duration || 5} minutes</span>
+            </div>
+        `;
+        
+        // Strengths & Weaknesses
+        if (analysis.strengths || analysis.areasForImprovement) {
+            html += `<div class="strengths-weaknesses">`;
+            
+            if (analysis.strengths && analysis.strengths.length > 0) {
+                html += `
+                    <div class="strengths-box">
+                        <h4>✅ Strengths</h4>
+                        <ul>
+                            ${analysis.strengths.map(s => `<li>${s}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (analysis.areasForImprovement && analysis.areasForImprovement.length > 0) {
+                html += `
+                    <div class="weaknesses-box">
+                        <h4>🔧 Areas for Improvement</h4>
+                        <ul>
+                            ${analysis.areasForImprovement.map(w => `<li>${w}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            html += `</div>`;
+        }
+        
+        // Overall feedback
+        if (analysis.overallFeedback) {
+            html += `
+                <div class="overall-feedback">
+                    <h4>📝 Overall Feedback</h4>
+                    <p>${analysis.overallFeedback}</p>
+                </div>
+            `;
+        }
+        
+        // Question-by-question analysis
+        if (analysis.questionAnalysis && analysis.questionAnalysis.length > 0) {
+            html += `<div class="conversation-review"><h4>Question-by-Question Analysis</h4>`;
+            
+            analysis.questionAnalysis.forEach((qa, index) => {
+                html += `
+                    <div class="qa-item">
+                        <div class="qa-question">Q${index + 1}: ${qa.question}</div>
+                        <div class="qa-answer"><strong>Your Answer:</strong> ${qa.userAnswer || 'No answer'}</div>
+                `;
+                
+                if (qa.idealAnswer) {
+                    html += `<div class="qa-ideal"><strong>Ideal Answer:</strong> ${qa.idealAnswer}</div>`;
+                }
+                
+                if (qa.mistakes && qa.mistakes.length > 0) {
+                    html += `<div class="qa-mistakes"><strong>Mistakes:</strong> ${qa.mistakes.join(', ')}</div>`;
+                }
+                
+                if (qa.suggestions && qa.suggestions.length > 0) {
+                    html += `<div class="qa-suggestions"><strong>Suggestions:</strong> ${qa.suggestions.join(', ')}</div>`;
+                }
+                
+                html += `<div style="margin-top: 0.5rem;"><strong>Score:</strong> ${qa.score || 0}%</div>`;
+                html += `</div>`;
+            });
+            
+            html += `</div>`;
+        } 
+        // Fallback to raw conversation history
+        else if (qaHistory.length > 0) {
+            html += `<div class="conversation-review"><h4>Conversation History</h4>`;
+            
+            qaHistory.forEach((qa, index) => {
+                html += `
+                    <div class="qa-item">
+                        <div class="qa-question">Q${index + 1}: ${qa.question}</div>
+                        <div class="qa-answer"><strong>Your Answer:</strong> ${qa.answer}</div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+        }
+        
+        // Suggested resources
+        if (analysis.suggestedResources && analysis.suggestedResources.length > 0) {
+            html += `
+                <div style="margin-top: 1.5rem;">
+                    <h4>📚 Recommended Resources</h4>
+                    <ul>
+                        ${analysis.suggestedResources.map(r => `<li>${r}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        content.innerHTML = html;
+        modal.classList.add('active');
     }
 }
 

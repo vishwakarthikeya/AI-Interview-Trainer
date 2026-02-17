@@ -947,3 +947,436 @@ body {
         text-align: center;
     }
 }
+/* Card System Styles (Add to styles.css) */
+
+.interview-mode-selector {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.interview-mode-selector h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #fff, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+}
+
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 1400px;
+    width: 100%;
+    margin-top: 2rem;
+}
+
+.interview-card {
+    background: rgba(20, 24, 28, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 2rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.interview-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+}
+
+.interview-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, transparent, currentColor, transparent);
+}
+
+.custom-card {
+    background: linear-gradient(145deg, rgba(30, 58, 138, 0.8), rgba(59, 130, 246, 0.8));
+    color: #93c5fd;
+}
+
+.practice-card {
+    background: linear-gradient(145deg, rgba(6, 95, 70, 0.8), rgba(16, 185, 129, 0.8));
+    color: #a7f3d0;
+}
+
+.resume-card {
+    background: linear-gradient(145deg, rgba(153, 27, 27, 0.8), rgba(239, 68, 68, 0.8));
+    color: #fecaca;
+}
+
+.card-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.interview-card h2 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    color: white;
+}
+
+.interview-card p {
+    text-align: center;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.interview-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: white;
+}
+
+.required {
+    color: #f87171;
+    margin-left: 4px;
+}
+
+.optional {
+    color: #9ca3af;
+    font-size: 0.8rem;
+    margin-left: 4px;
+    font-weight: normal;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: currentColor;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.duration-selector {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.duration-btn {
+    flex: 1;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.duration-btn.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: white;
+    box-shadow: 0 0 20px currentColor;
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.file-upload-area {
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: 2rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.file-upload-area:hover {
+    border-color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.upload-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.file-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    margin-top: 0.5rem;
+}
+
+.remove-file {
+    background: none;
+    border: none;
+    color: #f87171;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 0.5rem;
+}
+
+.continue-btn {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: white;
+    color: black;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.continue-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.continue-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Interview Session Styles */
+#interview-session {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.interview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.interview-info h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.interview-info p {
+    color: var(--text-secondary);
+}
+
+.timer-display {
+    text-align: right;
+}
+
+#time-remaining {
+    font-size: 2rem;
+    font-weight: bold;
+    font-family: monospace;
+    transition: color 0.3s;
+}
+
+.ai-avatar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+#avatar-3d {
+    width: 120px;
+    height: 120px;
+    border-radius: 60px;
+    background: radial-gradient(circle at 30% 30%, #6366f1, #1e1e3f);
+    box-shadow: 0 0 30px #6366f1;
+    animation: avatarPulse 3s infinite;
+}
+
+.ai-status {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background: #10b981;
+    animation: statusPulse 1.5s infinite;
+}
+
+.question-container {
+    margin-bottom: 2rem;
+}
+
+.question-number {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.question-text {
+    font-size: 1.5rem;
+    line-height: 1.5;
+    min-height: 4rem;
+}
+
+.answer-container {
+    margin-bottom: 2rem;
+}
+
+#answer-input {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    color: white;
+    font-size: 1rem;
+    resize: vertical;
+    margin-bottom: 1rem;
+}
+
+.answer-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.875rem 2rem;
+    border-radius: 50px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    border: none;
+    flex: 2;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    flex: 1;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.conversation-history {
+    margin-top: 1rem;
+}
+
+.toggle-history {
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+}
+
+.history-list {
+    margin-top: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.history-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+.history-question {
+    color: var(--accent-primary);
+    margin-bottom: 0.25rem;
+}
+
+.history-answer {
+    color: var(--text-secondary);
+}
+
+@keyframes avatarPulse {
+    0% { box-shadow: 0 0 30px #6366f1; }
+    50% { box-shadow: 0 0 50px #8b5cf6; }
+    100% { box-shadow: 0 0 30px #6366f1; }
+}
+
+@keyframes statusPulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+@media (max-width: 1024px) {
+    .card-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .card-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .interview-mode-selector h1 {
+        font-size: 1.8rem;
+    }
+    
+    .answer-controls {
+        flex-direction: column;
+    }
+}

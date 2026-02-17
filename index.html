@@ -5,21 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>AI Voice Interview Trainer</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/mobile.css">
 </head>
 <body>
+    <!-- Cosmic background will be injected here -->
+    
     <div class="app-container">
         <header class="glass-header">
             <div class="logo">
                 <span class="logo-icon">🎯</span>
                 <h1>Interview Trainer</h1>
             </div>
+            <nav class="header-nav">
+                <a href="index.html" class="nav-link active">Home</a>
+                <a href="interview.html" class="nav-link">Interview</a>
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+            </nav>
         </header>
 
         <main class="landing-main">
             <div class="hero-section glass-card">
                 <h2 class="hero-title">Master Your Interviews with AI</h2>
-                <p class="hero-subtitle">Practice realistic interviews with voice interaction and get detailed feedback</p>
+                <p class="hero-subtitle">Practice realistic interviews with dynamic AI-generated questions and get detailed feedback</p>
                 
                 <div class="feature-grid">
                     <div class="feature-item">
@@ -27,16 +35,16 @@
                         <span>Voice-first interaction</span>
                     </div>
                     <div class="feature-item">
-                        <span class="feature-icon">🤖</span>
-                        <span>AI-powered evaluation</span>
+                        <span class="feature-icon">🧠</span>
+                        <span>Intelligent follow-ups</span>
                     </div>
                     <div class="feature-item">
                         <span class="feature-icon">📊</span>
-                        <span>Performance analytics</span>
+                        <span>Detailed analytics</span>
                     </div>
                     <div class="feature-item">
-                        <span class="feature-icon">💾</span>
-                        <span>Local progress tracking</span>
+                        <span class="feature-icon">📄</span>
+                        <span>Resume-based interviews</span>
                     </div>
                 </div>
 
@@ -58,28 +66,28 @@
                     <div class="step">
                         <div class="step-number">1</div>
                         <div class="step-content">
-                            <h4>Choose Your Interview</h4>
-                            <p>Select role and difficulty level</p>
+                            <h4>Choose Interview Mode</h4>
+                            <p>Custom, Practice, or Resume-based</p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">2</div>
                         <div class="step-content">
-                            <h4>Answer Questions</h4>
-                            <p>Respond via voice or text</p>
+                            <h4>Answer AI-Generated Questions</h4>
+                            <p>Dynamic questions that adapt to you</p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">3</div>
                         <div class="step-content">
-                            <h4>Get AI Feedback</h4>
-                            <p>Receive detailed evaluation</p>
+                            <h4>Get Intelligent Analysis</h4>
+                            <p>Detailed feedback on each answer</p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">4</div>
                         <div class="step-content">
-                            <h4>Track Progress</h4>
+                            <h4>Track Your Progress</h4>
                             <p>Monitor improvement over time</p>
                         </div>
                     </div>
@@ -88,11 +96,11 @@
         </main>
 
         <footer class="glass-footer">
-            <p>© 2024 AI Interview Trainer | Practice with confidence</p>
+            <p>© 2024 AI Interview Trainer | Powered by Anthropic Claude</p>
         </footer>
     </div>
 
+    <script type="module" src="js/background3d.js"></script>
     <script type="module" src="js/app.js"></script>
 </body>
-<div id="bg-canvas"></div>
 </html>

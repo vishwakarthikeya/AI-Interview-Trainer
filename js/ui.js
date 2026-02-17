@@ -8,7 +8,6 @@ export class UIService {
         this.toastTimeout = null;
     }
 
-    // Switch between phases (setup, interview, evaluation)
     switchPhase(fromPhase, toPhase) {
         const phases = ['setup', 'interview', 'evaluation'];
         
@@ -25,7 +24,6 @@ export class UIService {
         }
     }
 
-    // Typing animation for questions
     typeText(element, text, speed = 30) {
         if (!element) return;
         
@@ -46,26 +44,22 @@ export class UIService {
         type();
     }
 
-    // Show toast notification
     showToast(message, type = 'info', duration = 3000) {
-        // Remove existing toast
         const existingToast = document.querySelector('.toast');
         if (existingToast) {
             existingToast.remove();
         }
         
-        // Create toast
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         toast.textContent = message;
         
-        // Style toast
         Object.assign(toast.style, {
             position: 'fixed',
             bottom: '20px',
             left: '50%',
             transform: 'translateX(-50%)',
-            background: type === 'error' ? '#ef4444' : '#6366f1',
+            background: type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#6366f1',
             color: 'white',
             padding: '12px 24px',
             borderRadius: '50px',
@@ -78,7 +72,6 @@ export class UIService {
         
         document.body.appendChild(toast);
         
-        // Auto remove
         if (this.toastTimeout) {
             clearTimeout(this.toastTimeout);
         }
@@ -89,7 +82,6 @@ export class UIService {
         }, duration);
     }
 
-    // Show loading spinner
     showLoading(container) {
         const spinner = document.createElement('div');
         spinner.className = 'loading-spinner';
@@ -102,7 +94,6 @@ export class UIService {
         container.appendChild(spinner);
     }
 
-    // Hide loading spinner
     hideLoading(container) {
         const spinner = container.querySelector('.loading-spinner');
         if (spinner) {
@@ -110,7 +101,6 @@ export class UIService {
         }
     }
 
-    // Format time (ms to readable)
     formatTime(ms) {
         const seconds = Math.floor(ms / 1000);
         const minutes = Math.floor(seconds / 60);
@@ -119,7 +109,6 @@ export class UIService {
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
 
-    // Update progress bar
     updateProgressBar(percent) {
         const progressFill = document.getElementById('progressFill');
         const progressPercent = document.getElementById('progressPercentage');
@@ -133,7 +122,6 @@ export class UIService {
         }
     }
 
-    // Scroll to element smoothly
     scrollToElement(element, offset = 0) {
         if (!element) return;
         
@@ -146,17 +134,15 @@ export class UIService {
         });
     }
 
-    // Show confirmation dialog
     async confirm(message) {
-        return new Promise((resolve) => {
-            const confirmed = window.confirm(message);
-            resolve(confirmed);
-        });
+        return window.confirm(message);
     }
 
-    // Add CSS animation styles
     static addAnimationStyles() {
+        if (document.getElementById('ui-animation-styles')) return;
+        
         const style = document.createElement('style');
+        style.id = 'ui-animation-styles';
         style.textContent = `
             @keyframes slideUp {
                 from {
@@ -178,6 +164,12 @@ export class UIService {
                 }
             }
             
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            
             .toast {
                 animation: slideUp 0.3s ease;
             }
@@ -185,10 +177,13 @@ export class UIService {
             .fade-out {
                 animation: fadeOut 0.3s ease forwards;
             }
+            
+            .pulse {
+                animation: pulse 2s infinite;
+            }
         `;
         document.head.appendChild(style);
     }
 }
 
-// Add animation styles on load
 UIService.addAnimationStyles();
